@@ -1,0 +1,154 @@
+interface =  """
+                       ===== MENU =====
+
+    Sejam Bem-Vindos(a), qual operação deseja realizar hoje?
+
+    (1) Depósito
+    (2) Saque
+    (3) Extrato
+    (4) Nova Conta
+    (5) Listar Contas
+    (6) Novo usuário
+    (7) Sair
+"""
+
+saldo = 0
+extrato = ""
+saque_diario = 0
+limite_saque = 3
+usuarios = []
+contas = []
+
+def exibir_interface():
+    return interface
+
+def exibir_menu():
+    print(exibir_interface())
+    return int(input("Resposta: "))
+
+def realizar_deposito(saldo, extrato):
+    valor = float(input("\nQual valor gostaria de depositar? R$"))
+    if valor > 0:
+        saldo += valor
+        extrato += f"Depósito de R$ {valor:.2f} realizado com sucesso.\n"
+        print(f"\nDepósito de R$ {valor:.2f} realizado com sucesso.\n")
+    else:
+        print("\nO valor inserido é inválido. Por favor, verifique e tente novamente com um valor correto.\n")
+    return saldo, extrato
+
+def realizar_saque(saldo, saque_diario, limite_saque, extrato):
+    saque = float(input("\nPor favor, insira o valor desejado para saque. R$"))
+    
+    if saque <= saldo:
+        if saque <= 500:
+            if saque_diario < limite_saque:
+                saque_diario += 1
+                saldo -= saque
+                extrato += f"\nSaque de R$ {saque:.2f} realizado com sucesso.\n"
+                print(f"\nSaque de R$ {saque:.2f} realizado com sucesso.\n")
+            else:
+                print("\nNão foi possível realizar o saque, pois o limite diário foi atingido. Por favor, tente novamente amanhã.\n")
+        else:
+            print("\nNão foi possível realizar o saque. Por favor, tente novamente com um valor dentro do limite de R$ 500.\n")
+    else:
+        print("\nNão foi possível realizar a operação devido à falta de saldo. Por favor, verifique seu saldo e tente novamente.\n")
+
+    return saldo, saque_diario, extrato
+
+def exibir_extrato(saldo, extrato):
+    print("===== EXTRATO =====\n")
+    if not extrato:
+        print("\nNão foram realizadas operações na sua conta hoje.\n")
+    else:
+        print(extrato)
+    print(f"\nSeu saldo atual é R$ {saldo:.2f}\n")
+    print("===================\n")
+
+def usuario_existente(cpf):
+    """Verifica se o usuário já existe com o mesmo CPF."""
+    for usuario in usuarios:
+        if usuario["cpf"] == cpf:
+            return True  
+    return False  
+
+def criar_usuario():
+    cpf = input("\nPara continuar com seu cadastro, insira seu CPF (somente com os números): \n")
+    
+    if usuario_existente(cpf):
+        print("\nUsuário já existe!")
+    else:
+        nome = input(f"\nDigite seu nome completo: \n")
+        data_de_nascimento = input(f"\nPor favor, insira sua data de nascimento no formato (DD/MM/AAAA): \n")
+        endereco = input(f"\nPor favor, insira o seu endereço completo, incluindo rua, número, bairro, cidade e estado (Ex: Rua Exemplo, 123, Bairro Centro, Cidade Exemplo, Estado): \n")
+        
+       
+        usuarios.append({
+            "nome": nome,
+            "data_nascimento": data_de_nascimento,
+            "cpf": cpf,
+            "endereco": endereco
+        })
+        
+        print("\nUsuário cadastrado com sucesso!\n")
+
+def criar_conta():
+    if not usuarios:
+        print("\nNão existem usuários cadastrados. Cadastre um usuário antes de criar uma conta.\n")
+        return
+    
+    cpf = input("\nDigite o CPF do usuário para criar a conta: \n")
+    
+    usuario_encontrado = None
+    for usuario in usuarios:
+        if usuario["cpf"] == cpf:
+            usuario_encontrado = usuario
+            break
+    
+    if usuario_encontrado:
+        conta = {
+            "cpf": usuario_encontrado["cpf"],
+            "nome": usuario_encontrado["nome"],
+            "saldo": 0,
+            "extrato": ""
+        }
+        contas.append(conta)
+        print(f"\nConta criada com sucesso para {usuario_encontrado['nome']}!\n")
+    else:
+        print("\nUsuário não encontrado. Por favor, verifique o CPF e tente novamente.\n")
+
+def listar_contas():
+    if not contas:
+        print("\nNão existem contas cadastradas.\n")
+        return
+
+    print("===== CONTAS CADASTRADAS =====\n")
+    for conta in contas:
+        print(f"Nome: {conta['nome']}, CPF: {conta['cpf']}, Saldo: R$ {conta['saldo']:.2f}")
+    print("==============================\n")
+
+def iniciar_banco():
+    global saldo, extrato, saque_diario, limite_saque
+
+    while True:
+        operacao = exibir_menu()
+
+        if operacao == 1:
+            saldo, extrato = realizar_deposito(saldo, extrato)
+        elif operacao == 2:
+            saldo, saque_diario, extrato = realizar_saque(saldo, saque_diario, limite_saque, extrato)
+        elif operacao == 3:
+            exibir_extrato(saldo, extrato)
+        elif operacao == 4:
+            criar_conta()
+        elif operacao == 5:
+            listar_contas()
+        elif operacao == 6:
+            criar_usuario()
+        elif operacao == 7:
+            print("\nAté a próxima operação\n")
+            break
+        else:
+            print("\nOperação inválida (erro de sintaxe), tente novamente\n")
+
+
+iniciar_banco()
